@@ -1,0 +1,6 @@
+{
+  "name": "PoolLink AI",
+  "description": "Intelligent aquatic facility assistant for Calgary. Providing real-time status intelligence, verified schedules, and operational alerts.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

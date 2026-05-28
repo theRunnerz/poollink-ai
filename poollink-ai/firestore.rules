@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // PoolSchedule Validation
+    function isValidPoolSchedule(data) {
+      return data.poolId is string && data.poolId.size() <= 128 &&
+             data.hours is string && data.hours.size() <= 2000 &&
+             data.lastUpdated != null &&
+             (data.status == null || data.status in ["open", "closed", "maintenance", "limited", "unknown"]) &&
+             (data.confidence == null || data.confidence in ["High", "Medium", "Low"]);
+    }
+
+    // Pools: Publicly readable, admin only write
+    match /pools/{poolId} {
+      allow read: if true;
+      allow write: if isSignedIn(); // In a real app this would be isAdmin()
+    }
+
+    match /pools/{poolId}/reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid &&
+                    incoming().poolId == poolId;
+      allow update, delete: if isOwner(existing().userId);
+    }
+
+    match /users/{userId}/favorites/{favoriteId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /pool_schedules/{poolId} {
+      allow read: if true;
+      allow create, update: if isValidPoolSchedule(incoming()) &&
+                            incoming().poolId == poolId;
+      allow delete: if false;
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "Pool": {
+      "title": "Pool",
+      "description": "Information about a public swimming pool.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "location": { "type": "string" },
+        "operator": { "type": "string", "enum": ["City of Calgary", "YMCA", "MNP", "Community Association", "Private"] },
+        "address": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "type": { "type": "string", "enum": ["Indoor", "Outdoor", "Wading", "Leisure Centre"] },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "scheduleUrl": { "type": "string", "format": "uri" }
+      },
+      "required": ["id", "name", "lat", "lng", "operator"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "A user review for a swimming pool.",
+      "type": "object",
+      "properties": {
+        "poolId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["poolId", "userId", "rating", "comment", "createdAt"]
+    },
+    "Favorite": {
+      "title": "Favorite",
+      "description": "Link between a user and their favorite pool.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "poolId": { "type": "string" }
+      },
+      "required": ["userId", "poolId"]
+    },
+    "PoolSchedule": {
+      "title": "PoolSchedule",
+      "description": "Cached or verified schedule and operational status for a pool.",
+      "type": "object",
+      "properties": {
+        "poolId": { "type": "string" },
+        "hours": { "type": "string" },
+        "lastUpdated": { "type": "string", "format": "date-time" },
+        "source": { "type": "string" },
+        "confidence": { "type": "string", "enum": ["High", "Medium", "Low"] },
+        "status": { "type": "string", "enum": ["open", "closed", "maintenance", "limited"] },
+        "activities": { 
+          "type": "array", 
+          "items": { 
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "enum": ["lane_swim", "public_swim", "aquafit", "therapy_pool", "family_swim", "lessons", "other"] },
+              "label": { "type": "string" },
+              "time": { "type": "string" }
+            }
+          } 
+        }
+      },
+      "required": ["poolId", "hours", "lastUpdated"]
+    }
+  },
+  "firestore": {
+    "/pools": {
+      "schema": "Pool",
+      "description": "Collection of available pools."
+    },
+    "/pools/{poolId}/reviews": {
+      "schema": "Review",
+      "description": "Reviews for a specific pool."
+    },
+    "/users/{userId}/favorites": {
+      "schema": "Favorite",
+      "description": "User's favorite pools."
+    },
+    "/pool_schedules": {
+      "schema": "PoolSchedule",
+      "description": "Cached operating hours for pools."
+    }
+  }
+}
